@@ -16,13 +16,16 @@ services:
       - VIRTUAL_HOST=127.0.0.1.xip.io
       - VIRTUAL_PORT=9200
     deploy:
-      endpoint_mode: dnsrr
+#      endpoint_mode: dnsrr
+
       replicas: 1
       resources:
         limits:
           memory: 1G
         reservations:
           memory: 512M
+    ports:
+        - 9200:9200
     volumes:
       - esdata:/usr/share/elasticsearch/data
     networks:
@@ -59,15 +62,14 @@ services:
       - rabbitSecretsPassword
       - indexingReceiverPassword
       - indexingPublisherPassword
-  nginxProxy:
-    image:  jwilder/nginx-proxy:latest
-    networks:
-      - indexing
-    ports:
-      - 80:80
-      - 9200:9200
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
+#  nginxProxy:
+#    image:  jwilder/nginx-proxy:latest
+#    networks:
+#      - indexing
+#    ports:
+#      - 80:80
+#    volumes:
+#      - /var/run/docker.sock:/tmp/docker.sock:ro
   documentIndexer:
     image: guidof/documentindexer-indexer:latest
     depends_on:
