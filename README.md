@@ -2,7 +2,7 @@
 The search cluster consists of the standard components RabbitMQ and ElasticSearch components, with a Indexer and 
 SearchQuery components to index and query the data.
 
-![Components](document/SearchArchitecture.png)
+![Components](documents/SearchArchitecture.png)
 
 ## Indexer
 The Index consumes the messages off the `indexDocument` queue and persists them into an Elastic index (index name based on the 
