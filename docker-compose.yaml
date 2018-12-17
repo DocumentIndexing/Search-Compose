@@ -1,0 +1,117 @@
+version: '3.7'
+secrets:
+  rabbitSecretsPassword:
+    external: true
+  indexingReceiverPassword:
+    external: true
+  indexingPublisherPassword:
+    external: true
+services:
+  elasticSearch:
+    image: guidof/documentindexer-elasticsearch:latest
+    environment:
+      - cluster.name=elastic-docker-cluster
+      - bootstrap.memory_lock=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - VIRTUAL_HOST=127.0.0.1.xip.io
+      - VIRTUAL_PORT=9200
+    deploy:
+      endpoint_mode: dnsrr
+      replicas: 1
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - indexing
+  elasticSearchTemplate:
+    image: guidof/documentindexer-indextemplates:latest
+    networks:
+      - indexing
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+  rabbitMq:
+    image: guidof/documentindexer-rabbitmq:latest
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - indexing
+    environment:
+      RECEIVER_USER: indexingReceiver
+      RECEIVER_PASS_FILE: /run/secrets/indexingReceiverPassword
+
+      PUBLISHER_USER: indexingPublisher
+      PUBLISHER_PASS_FILE: /run/secrets/indexingPublisherPassword
+
+      RABBITMQ_DEFAULT_USER: RabbitMqAdmin
+      RABBITMQ_DEFAULT_PASS_FILE: /run/secrets/rabbitSecretsPassword
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    secrets:
+      - rabbitSecretsPassword
+      - indexingReceiverPassword
+      - indexingPublisherPassword
+  nginxProxy:
+    image:  jwilder/nginx-proxy:latest
+    networks:
+      - indexing
+    ports:
+      - 80:80
+      - 9200:9200
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  documentIndexer:
+    image: guidof/documentindexer-indexer:latest
+    depends_on:
+      - rabbitMq
+      - elasticSearch
+      - kafka
+      - zookeeper
+    environment:
+      - RABBITMQ_USER=indexingReceiver
+      - RABBITMQ_PASSWORD_FILE=/run/secrets/indexingReceiverPassword
+      - INDEX_QUEUE=indexDocument
+      - RABBITMQ_VHOST=indexing
+    secrets:
+      - indexingReceiverPassword
+    networks:
+      - indexing
+  searchQuery:
+    image: guidof/documentindexer-searchquery:latest
+    depends_on:
+      - elasticSearch
+    networks:
+      - indexing
+    ports:
+      - 10001:10001
+#  zookeeper:
+#    image: docker
+#    ports:
+#      - "2181:2181"
+#  kafka:
+#    image: wurstmeister/kafka:0.11.0.1
+#    depends_on:
+#      - zookeeper
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      KAFKA_ADVERTISED_HOST_NAME: kafka
+#      KAFKA_CREATE_TOPICS: "hello-topic:1:1"
+#      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  indexing:
