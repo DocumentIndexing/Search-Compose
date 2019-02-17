@@ -94,6 +94,17 @@ services:
       - indexing
     ports:
       - 10001:10001
+  searchUI:
+    image: guidof/documentindexer-searchui:latest
+    depends_on:
+      - searchQuery
+    networks:
+      - indexing
+    ports:
+      - 8080:80
+    links:
+      - searchQuery:search_query
+
 #  zookeeper:
 #    image: docker
 #    ports:
