@@ -102,8 +102,7 @@ services:
       - indexing
     ports:
       - 8080:80
-    links:
-      - searchQuery:search_query
+
 
 #  zookeeper:
 #    image: docker
