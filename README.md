@@ -27,6 +27,11 @@ Ensure you run the following before you try and start the swarm
 ```
 sudo sysctl -w vm.max_map_count=262144
 ```
+To set this value permanently, update the vm.max_map_count setting in `/etc/sysctl.conf`. To verify after rebooting, run sysctl `vm.max_map_count`.
+```
+vm.max_map_count=262144
+```
+
 Once running you can access Elastic via the localhost:9200 url
 this will need to be changed going forward and put behind a some type of
 authentication.
@@ -49,7 +54,7 @@ read -p "create adminMqPassword : " pwd ; echo $pwd | docker secret create rabbi
 
 To start the cluster  
 ```
-docker stack deploy --force -c docker-compose.yaml search
+docker stack deploy -c docker-compose.yaml search
 ```
 
 You may want to pull the latest image down.
