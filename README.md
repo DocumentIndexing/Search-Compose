@@ -47,9 +47,13 @@ read -p "create adminMqPassword : " pwd ; echo $pwd | docker secret create rabbi
 
 ```
 
-To start the cluster  
+To start the cluster
 ```
-docker stack deploy --force -c docker-compose.yaml search
+For Dev (using local images):
+docker stack deploy -c dev-compose.yaml search
+```
+For Production (using remote images):
+docker stack deploy -c docker-compose.yaml search
 ```
 
 You may want to pull the latest image down.

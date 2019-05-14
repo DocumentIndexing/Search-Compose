@@ -8,7 +8,7 @@ secrets:
     external: true
 services:
   elasticSearch:
-    image: guidof/documentindexer-elasticsearch:latest
+    image: documentindexer-elasticsearch:latest
     environment:
       - cluster.name=elastic-docker-cluster
       - bootstrap.memory_lock=false
@@ -31,7 +31,7 @@ services:
     networks:
       - indexing
   elasticSearchTemplate:
-    image: guidof/documentindexer-indextemplates:latest
+    image: documentindexer-indextemplates:latest
     networks:
       - indexing
     deploy:
@@ -39,7 +39,7 @@ services:
       restart_policy:
         condition: none
   rabbitMq:
-    image: guidof/documentindexer-rabbitmq:latest
+    image: documentindexer-rabbitmq:latest
     ports:
       - 15672:15672
       - 5672:5672
@@ -71,7 +71,7 @@ services:
 #    volumes:
 #      - /var/run/docker.sock:/tmp/docker.sock:ro
   documentIndexer:
-    image: guidof/documentindexer-indexer:latest
+    image: documentindexer-indexer:latest
     depends_on:
       - rabbitMq
       - elasticSearch
@@ -87,7 +87,7 @@ services:
     networks:
       - indexing
   searchQuery:
-    image: guidof/documentindexer-searchquery:latest
+    image: documentindexer-searchquery:latest
     depends_on:
       - elasticSearch
     networks:
@@ -95,7 +95,7 @@ services:
     ports:
       - 10001:10001
   searchUI:
-    image: guidof/documentindexer-searchui:latest
+    image: documentindexer-searchui:latest
     depends_on:
       - searchQuery
     networks:
